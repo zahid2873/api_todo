@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:api_todo/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart'as http;
 
@@ -43,6 +44,7 @@ class _AddTodoState extends State<AddTodo> {
             SizedBox(height: 10,),
             ElevatedButton(onPressed: (){
               submitData();
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>HomePage()));
             },
                 child: Text('Submit')),
           ],
