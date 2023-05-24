@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:api_todo/pages/edit_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List  items =[];
+  bool isLoading = true;
   @override
   void initState() {
     // TODO: implement initState
@@ -32,24 +34,49 @@ class _HomePageState extends State<HomePage> {
       },
         child: Icon(Icons.add,size: 20,),
       ),
-      body:ListView.builder(
-        itemBuilder: (context,index)
-        {
-          final item = items[index] as Map;
-          return Card(
-            child: ListTile(
-              leading: CircleAvatar(child: Text('${index + 1}')),
-              title: Text(item['title']),
-              subtitle: Text(item['description']),
-            ),
-          );
-        },
-        itemCount: items.length,
+      body:Visibility(
+        visible: isLoading,
+        child: Center(child: CircularProgressIndicator(),),
+        replacement: RefreshIndicator(
+          onRefresh: fetchTodoData,
+          child: ListView.builder(
+            itemBuilder: (context,index)
+            {
+              final item = items[index] as Map;
+              final id = item['_id'] as String;
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(child: Text('${index + 1}')),
+                  title: Text(item['title']),
+                  subtitle: Text(item['description']),
+                  trailing: PopupMenuButton(
+                    onSelected: (value){
+                      if(value=='edit'){
+                        navigatorToEditPage(item);
+                      }else if(value == 'delete'){
+                        deleteById(id);
+                      }
+                    },
+                      itemBuilder: (context){
+                    return [
+                      PopupMenuItem(child: Text("Edit"),value: 'edit',),
+                      PopupMenuItem(child: Text("Delete"),value: 'delete',)
+                    ];
+                  })
+                ),
+              );
+            },
+            itemCount: items.length,
+          ),
+        ),
       ),
     );
   }
 
   Future<void> fetchTodoData()async {
+    setState(() {
+      isLoading = true;
+    });
     String url = 'https://api.nstack.in/v1/todos?page=1&limit=10';
     final responce = await http.get(Uri.parse(url));
     if (responce.statusCode == 200) {
@@ -62,6 +89,29 @@ class _HomePageState extends State<HomePage> {
     } else {
       print("Something wrong");
     }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> deleteById(String id)async{
+    String url = 'https://api.nstack.in/v1/todos/$id';
+    final responce = await http.delete(Uri.parse(url));
+    if(responce.statusCode==200){
+      final filtered = items.where((element) => element['_id'] !=id).toList();
+      setState(() {
+        items = filtered;
+      });
+
+    }else{
+      print('Something wrong');
+    }
+
+  }
+
+  void navigatorToEditPage(Map item){
+    final route =  MaterialPageRoute(builder: (context)=>EditTodo(todo: item,),);
+    Navigator.push(context, route);
   }
 
   }
