@@ -1,7 +1,17 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:io';
 
-class AddTodo extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart'as http;
+
+class AddTodo extends StatefulWidget {
+  @override
+  State<AddTodo> createState() => _AddTodoState();
+}
+
+class _AddTodoState extends State<AddTodo> {
   TextEditingController titleController = TextEditingController();
+
   TextEditingController descriptionController = TextEditingController();
 
   @override
@@ -15,7 +25,7 @@ class AddTodo extends StatelessWidget {
         child: Column(
           children: [
             TextField(
-              controller: descriptionController,
+              controller: titleController,
               decoration: InputDecoration(
                 hintText: 'Title'
               ),
@@ -32,12 +42,36 @@ class AddTodo extends StatelessWidget {
             ),
             SizedBox(height: 10,),
             ElevatedButton(onPressed: (){
-
+              submitData();
             },
                 child: Text('Submit')),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> submitData()async{
+    final title = titleController.text;
+    final description = descriptionController.text;
+    final body = {
+      "title": title,
+      "description": description,
+      "is_completed": false
+    };
+    final url = 'https://api.nstack.in/v1/todos';
+    final responce = await http.post(Uri.parse(url),body: jsonEncode(body),headers: {'Content-Type':'application/json'});
+    if(responce.statusCode==201){
+      descriptionController.text='';
+      titleController.text = '';
+      showMsg('Create Successfully', Colors.white);
+      print(responce.body);
+    }else{
+      showMsg('Something wrong,pls try again',Colors.red);
+    }
+  }
+  void showMsg(String message,Color color){
+    final snackBar = SnackBar(content: Text(message),backgroundColor: color,);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
