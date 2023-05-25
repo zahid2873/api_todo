@@ -102,8 +102,10 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         items = filtered;
       });
+      showMsg("Deleted Successfully", Colors.white);
 
     }else{
+      showMsg("Failed to delete", Colors.red);
       print('Something wrong');
     }
 
@@ -112,6 +114,11 @@ class _HomePageState extends State<HomePage> {
   void navigatorToEditPage(Map item){
     final route =  MaterialPageRoute(builder: (context)=>EditTodo(todo: item,),);
     Navigator.push(context, route);
+  }
+
+  void showMsg(String message,Color color){
+    final snackBar = SnackBar(content: Text(message),backgroundColor: color,);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   }

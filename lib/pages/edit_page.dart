@@ -85,7 +85,7 @@ class _EditTodoState extends State<EditTodo> {
       "is_completed": false
     };
     final url = 'https://api.nstack.in/v1/todos/$id';
-    final responce = await http.post(Uri.parse(url),body: jsonEncode(body),headers: {'Content-Type':'application/json'});
+    final responce = await http.put(Uri.parse(url),body: jsonEncode(body),headers: {'Content-Type':'application/json'});
     print(responce.statusCode);
     if(responce.statusCode==200){
       showMsg('Create Successfully', Colors.white);
